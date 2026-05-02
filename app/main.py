@@ -1,0 +1,46 @@
+"""FastAPI Notes API.
+
+Tiny CRUD over a `notes` table, used by the Deviax fixture matrix.
+The pipeline must spot the structural problems below and fix them
+during artifact generation.
+"""
+from fastapi import Depends, FastAPI, HTTPException
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from .db import get_session
+from .models import Note
+from .schemas import NoteIn, NoteOut
+
+# FIXME: hardcoded session secret — must come from env in prod.
+# Anyone who reads this file knows the signing key. The fix is
+# `os.environ["SECRET_KEY"]` with a sane startup-time check.
+SECRET_KEY = "fixtures-secret-do-not-ship"
+
+app = FastAPI(title="notes-fastapi-pg", version="0.1.0")
+
+
+@app.get("/")
+def root() -> dict[str, str]:
+    return {"service": "notes-fastapi-pg"}
+
+
+@app.get("/notes", response_model=list[NoteOut])
+def list_notes(db: Session = Depends(get_session)) -> list[Note]:
+    return list(db.scalars(select(Note).order_by(Note.id.desc())).all())
+
+
+@app.post("/notes", response_model=NoteOut, status_code=201)
+def create_note(payload: NoteIn, db: Session = Depends(get_session)) -> Note:
+    if not payload.body.strip():
+        raise HTTPException(status_code=400, detail="body required")
+    note = Note(body=payload.body.strip())
+    db.add(note)
+    db.commit()
+    db.refresh(note)
+    return note
+
+
+# NOTE: no /healthz, no /readyz — Deviax should add these during
+# artifact generation. Without them, k8s readinessProbe defaults to
+# "container started" which is too coarse for a real deploy.

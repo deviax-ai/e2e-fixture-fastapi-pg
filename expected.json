@@ -1,0 +1,67 @@
+{
+  "stack_bucket": "python-fastapi-postgres",
+  "stack_slug": "fastapi",
+  "external": {
+    "ai_source": "hand",
+    "complexity": "standard"
+  },
+  "must_find_issues": [
+    { "source": "regex", "title_contains": "localhost" }
+  ],
+  "required_artifacts": [
+    "Dockerfile",
+    ".deviax/k8s/deployment.yaml",
+    ".deviax/k8s/service.yaml"
+  ],
+  "required_questions": [
+    "subdomain"
+  ],
+  "must_reach_phase": "live",
+  "assert": {
+    "outcome": "success",
+    "url_status_class": "2xx",
+    "url_status_after_1h": "not_5xx"
+  },
+  "budget": {
+    "max_ai_cost_usd": 1.50,
+    "max_duration_seconds": 900,
+    "max_user_questions": 5
+  },
+  "seeded_problems": [
+    {
+      "file": "app/db.py",
+      "line": 11,
+      "type": "hardcoded_localhost",
+      "marker_substring": "postgresql+psycopg://postgres:postgres@localhost:5432/notes"
+    },
+    {
+      "file": "app/main.py",
+      "line": 18,
+      "type": "hardcoded_secret",
+      "marker_substring": "fixtures-secret-do-not-ship"
+    },
+    {
+      "file": "alembic.ini",
+      "line": 9,
+      "type": "hardcoded_localhost",
+      "marker_substring": "postgresql+psycopg://postgres:postgres@localhost:5432/notes"
+    },
+    {
+      "file": "Dockerfile",
+      "line": 7,
+      "type": "outdated_base_image",
+      "marker_substring": "FROM python:3.9"
+    },
+    {
+      "file": "Dockerfile",
+      "line": 1,
+      "type": "missing_alembic_upgrade"
+    },
+    {
+      "file": "app/main.py",
+      "line": 41,
+      "type": "missing_health_endpoint"
+    }
+  ],
+  "notes": "Phase 1 most-painful-pillar fixture. FastAPI + SQLAlchemy 2.0 + Alembic + Postgres. Exercises managed-deps + migrations path: pipeline must provision Postgres (managed dep), inject DATABASE_URL, run `alembic upgrade head` before first request, and rewrite the python:3.9 Dockerfile into something with USER, HEALTHCHECK, and a multi-stage build."
+}
