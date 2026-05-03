@@ -36,7 +36,7 @@
     },
     {
       "file": "app/main.py",
-      "line": 18,
+      "line": 22,
       "type": "hardcoded_secret",
       "marker_substring": "fixtures-secret-do-not-ship"
     },
