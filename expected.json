@@ -30,7 +30,7 @@
   "seeded_problems": [
     {
       "file": "app/db.py",
-      "line": 11,
+      "line": 21,
       "type": "hardcoded_localhost",
       "marker_substring": "postgresql+psycopg://postgres:postgres@localhost:5432/notes"
     },
