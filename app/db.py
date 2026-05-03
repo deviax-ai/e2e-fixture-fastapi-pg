@@ -21,6 +21,14 @@ DATABASE_URL = os.environ.get(
     "postgresql+psycopg://postgres:postgres@localhost:5432/notes",
 )
 
+# SQLAlchemy defaults to the psycopg2 driver for a `postgresql://` URL,
+# but our requirements.txt only ships psycopg (v3). Most managed-DB env
+# vars come back without an explicit driver, so normalize here.
+if DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace(
+        "postgresql://", "postgresql+psycopg://", 1
+    )
+
 engine = create_engine(DATABASE_URL, pool_pre_ping=True, future=True)
 SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 

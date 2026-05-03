@@ -22,8 +22,15 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # Runtime override: prefer DATABASE_URL (12-factor) over alembic.ini.
+# Normalize to the psycopg (v3) driver — managed-DB env vars usually
+# come back as plain `postgresql://...` without an explicit driver, and
+# SQLAlchemy defaults that to psycopg2, which isn't in requirements.txt.
 _runtime_url = os.environ.get("DATABASE_URL")
 if _runtime_url:
+    if _runtime_url.startswith("postgresql://"):
+        _runtime_url = _runtime_url.replace(
+            "postgresql://", "postgresql+psycopg://", 1
+        )
     config.set_main_option("sqlalchemy.url", _runtime_url)
 
 target_metadata = Base.metadata
