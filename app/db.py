@@ -14,12 +14,8 @@ from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 # FIXME: hardcoded fallback DSN — works only on the original developer's
 # machine. In production the platform sets DATABASE_URL to the managed
-# instance; the line below is just so `python app/main.py` works locally
-# without exporting anything first.
-DATABASE_URL = os.environ.get(
-    "DATABASE_URL",
-    "postgresql+psycopg://postgres:postgres@localhost:5432/notes",
-)
+# instance.
+DATABASE_URL = os.environ["DATABASE_URL"]
 
 # SQLAlchemy defaults to the psycopg2 driver for a `postgresql://` URL,
 # but our requirements.txt only ships psycopg (v3). Most managed-DB env
