@@ -16,10 +16,8 @@ from .schemas import NoteIn, NoteOut
 
 # FIXME: hardcoded session secret as the dev fallback — anyone who
 # reads this file knows the signing key for unprovisioned env. In
-# production set SECRET_KEY in env. The fallback string is the same
-# 12-factor pattern most vibe-coded apps ship; the AI is expected to
-# detect it as "dev secret leaking to prod" worth surfacing in env-vars.
-SECRET_KEY = os.environ.get("SECRET_KEY", "fixtures-secret-do-not-ship")
+# production set SECRET_KEY in env.
+SECRET_KEY = os.environ["SECRET_KEY"]
 
 app = FastAPI(title="notes-fastapi-pg", version="0.1.0")
 
@@ -27,6 +25,11 @@ app = FastAPI(title="notes-fastapi-pg", version="0.1.0")
 @app.get("/")
 def root() -> dict[str, str]:
     return {"service": "notes-fastapi-pg"}
+
+
+@app.get("/healthz")
+def healthz() -> dict[str, str]:
+    return {"status": "ok"}
 
 
 @app.get("/notes", response_model=list[NoteOut])
